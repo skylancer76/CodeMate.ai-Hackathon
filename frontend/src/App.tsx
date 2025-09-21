@@ -147,11 +147,28 @@ const App: React.FC = () => {
     }
   }, [lines]);
 
-  // Focus input on mount
+  // Focus input on mount and test connection
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
+    
+    // Test backend connection on mount
+    const testConnection = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/test`);
+        if (response.ok) {
+          const data = await response.json();
+          addLine(`✅ Backend connected: ${data.message}`, 'output');
+        } else {
+          addLine(`❌ Backend connection failed: Status ${response.status}`, 'error');
+        }
+      } catch (error) {
+        addLine(`❌ Backend connection failed: ${error.message}`, 'error');
+      }
+    };
+    
+    testConnection();
   }, []);
 
   return (
