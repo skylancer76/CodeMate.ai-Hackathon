@@ -9,16 +9,11 @@ from commands_list import COMMANDS
 # Initialize FastAPI app
 app = FastAPI(title="Terminal API", version="1.0.0")
 
-# CORS middleware - had to add this for frontend to work
-allowed_origins = [
-    "http://localhost:8080",  # Local development
-    "http://localhost:3000",  # Alternative local port
-    "https://your-frontend-url.vercel.app",  # Replace with your actual frontend URL
-]
-
+# CORS middleware - allow all origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -75,3 +70,8 @@ def stats():
 @app.get("/health")
 def health_check():
     return {"status": "ok", "timestamp": time.time()}
+
+# Test endpoint for CORS debugging
+@app.get("/test")
+def test_endpoint():
+    return {"message": "CORS is working!", "timestamp": time.time()}
