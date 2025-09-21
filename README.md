@@ -8,33 +8,23 @@ A modern, web-based terminal interface built with React and FastAPI. Experience 
 ![Python](https://img.shields.io/badge/Python-3.9+-3776ab)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178c6)
 
-## ✨ Features
+## ✨ Why Tyeetale Terminal?
 
-### 🎨 **Modern Interface**
-- Clean, responsive design with light/dark theme support
-- Real-time system resource monitoring
-- Intuitive command-line interface
-- Mobile-friendly responsive layout
+### 🎯 **Core Features**
+- **Web-Based Terminal**: Access a full terminal experience directly in your browser - no installation required
+- **Secure Sandboxed Environment**: Execute commands safely without affecting your local system
+- **Real-time System Monitoring**: Monitor CPU, memory, and network usage with live status updates
 
-### 🚀 **30+ Terminal Commands**
-- **File & Directory Operations**: `ls`, `cd`, `pwd`, `mkdir`, `rm`, `touch`, `cat`, `echo`, `mv`, `cp`, `ln`, `chmod`, `chown`, `file`, `stat`
-- **Text Processing**: `head`, `tail`, `grep`, `sed`, `awk`, `sort`, `uniq`, `wc`, `cut`
-- **System Information**: `whoami`, `date`, `uptime`, `uname`, `df`, `du`, `free`, `top`, `ps`, `kill`, `killall`, `jobs`, `bg`, `fg`
-- **Network & Utilities**: `ping`, `curl`, `wget`, `ssh`, `scp`, `tar`, `zip`, `unzip`
-- **Terminal Control**: `clear`, `history`, `alias`, `export`, `env`, `which`, `whereis`
-- **Help & Documentation**: `help`, `man`, `info`
+### 🚀 **Available Commands**
 
-### 🔒 **Security & Sandboxing**
-- Isolated terminal environment
-- Sandboxed file system access
-- Secure command execution
-- No system-level access
-
-### 📊 **Real-time Monitoring**
-- CPU usage tracking
-- Memory utilization display
-- Network activity monitoring
-- System status indicators
+| Category | Commands |
+|----------|----------|
+| **File & Directory Operations** | `ls`, `cd`, `pwd`, `mkdir`, `rm`, `rmdir`, `touch`, `cat`, `echo`, `mv`, `cp`, `ln`, `chmod`, `chown`, `file`, `stat` |
+| **Text Processing** | `head`, `tail`, `grep`, `sed`, `awk`, `sort`, `uniq`, `wc`, `cut` |
+| **System Information** | `whoami`, `date`, `uptime`, `uname`, `df`, `du`, `free`, `top`, `ps`, `kill`, `killall`, `jobs`, `bg`, `fg` |
+| **Network & Utilities** | `ping`, `curl`, `wget`, `ssh`, `scp`, `tar`, `zip`, `unzip` |
+| **Terminal Control** | `clear`, `history`, `alias`, `export`, `env`, `which`, `whereis` |
+| **Help & Documentation** | `help`, `man`, `info` |
 
 ## 🏗️ Architecture
 
@@ -91,6 +81,10 @@ Tyeetale Terminal/
 
 4. **Access the Terminal**
    Open your browser and navigate to `http://localhost:5173`
+
+### 🌐 **Live Demo**
+- **Frontend**: [https://tyeetale-terminal.vercel.app](https://tyeetale-terminal.vercel.app)
+- **Backend API**: [https://codemateai-hackathon-production.up.railway.app](https://codemateai-hackathon-production.up.railway.app)
 
 ### Production Deployment
 
@@ -170,21 +164,6 @@ VITE_API_URL=https://your-railway-backend-url.railway.app
 - **Commands**: Add new commands in `backend/commands_list.py`
 - **Styling**: Update CSS variables for different color schemes
 
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow TypeScript best practices
-- Write clear, documented code
-- Test your changes thoroughly
-- Update documentation as needed
 
 ## 📝 License
 
@@ -198,8 +177,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/tyeetale-terminal/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/tyeetale-terminal/discussions)
+- **Issues**: [GitHub Issues](https://github.com/skylancer76/CodeMate.ai-Hackathon/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/skylancer76/CodeMate.ai-Hackathon/discussions)
 - **Email**: support@tyeetale.com
 
 ---
@@ -207,10 +186,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
   <p>Made with ❤️ by the Tyeetale Team</p>
   <p>
-    <a href="https://github.com/your-username/tyeetale-terminal">⭐ Star us on GitHub</a>
+    <a href="https://github.com/skylancer76/CodeMate.ai-Hackathon">⭐ Star us on GitHub</a>
     •
-    <a href="https://tyeetale-terminal.railway.app">🌐 Live Demo</a>
+    <a href="https://tyeetale-terminal.vercel.app">🌐 Live Demo</a>
     •
-    <a href="https://github.com/your-username/tyeetale-terminal/issues">🐛 Report Bug</a>
+    <a href="https://github.com/skylancer76/CodeMate.ai-Hackathon/issues">🐛 Report Bug</a>
   </p>
 </div>
