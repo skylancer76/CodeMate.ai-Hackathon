@@ -69,6 +69,8 @@ export default {
           command: "hsl(var(--terminal-command))",
           path: "hsl(var(--terminal-path))",
           ghost: "hsl(var(--terminal-ghost))",
+          cursor: "hsl(var(--terminal-cursor))",
+          highlight: "hsl(var(--terminal-highlight))",
         },
         status: {
           cpu: "hsl(var(--status-cpu))",

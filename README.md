@@ -1,24 +1,14 @@
-# Python Terminal Web App
+# Tyeetale Terminal
 
-A modern web-based terminal interface that connects to a Python backend for real command execution.
+A web-based terminal interface built with React and Python FastAPI. This project started as a hackathon idea and evolved into a functional terminal emulator that runs real commands on your system.
 
-## Project Structure
+## What is this?
 
-```
-├── backend/          # Python FastAPI backend
-│   ├── main.py       # FastAPI server and endpoints
-│   ├── command_processor.py  # Command execution logic
-│   ├── commands_list.py     # Supported commands list
-│   └── requirements.txt     # Python dependencies
-└── frontend/         # React frontend
-    ├── src/          # React source files
-    ├── index.html    # HTML entry point
-    └── package.json  # Node.js dependencies
-```
+Basically, I wanted to create a terminal that looks cool and works in the browser. It connects to a Python backend that actually executes commands on your file system (with some safety restrictions). Think of it as a web-based terminal with a modern UI.
 
-## Quick Start
+## Getting Started
 
-### 1. Start the Backend (Python)
+### Backend Setup (Python)
 
 ```bash
 cd backend
@@ -26,7 +16,9 @@ pip install -r requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 2. Start the Frontend (React)
+The backend will start on `http://localhost:8000`
+
+### Frontend Setup (React)
 
 ```bash
 cd frontend
@@ -34,35 +26,67 @@ npm install
 npm run dev
 ```
 
-### 3. Open the Application
+The frontend will start on `http://localhost:8080`
 
-Navigate to `http://localhost:8080` in your browser.
+### Usage
 
-## Features
+Just open `http://localhost:8080` in your browser and start typing commands!
 
-- **Real Command Execution**: Commands are processed by the Python backend using your actual file system
-- **Auto-completion**: Type and get suggestions for available commands
-- **System Stats**: Real-time CPU, memory, and network usage
-- **Modern UI**: Beautiful terminal interface with syntax highlighting
-- **Cross-Platform**: Works on Windows, macOS, and Linux
+## What Commands Work?
 
-## Supported Commands
+- `ls` - List files and directories
+- `cd` - Change directory (supports `cd ..`)
+- `pwd` - Show current directory
+- `mkdir` - Create directories
+- `rm` - Remove files
+- `rmdir` - Remove empty directories
+- `touch` - Create/update files
+- `cat` - Display file contents
+- `echo` - Print text
+- `clear` - Clear the screen
+- `mv` - Move/rename files
+- `cp` - Copy files
+- `head` - Show first 10 lines of a file
+- `tail` - Show last 10 lines of a file
+- `grep` - Search text in files
+- `find` - Find files by name
+- `whoami` - Show current user
+- `date` - Show current date/time
+- `ps` - List running processes
+- `kill` - Terminate processes
+- `help` - Show help message
 
-ls, cd, pwd, mkdir, rm, rmdir, touch, cat, echo, clear, mv, cp, head, tail, grep, find, whoami, date, ps, kill
+## Technical Details
+
+**Backend:**
+- FastAPI for the API
+- psutil for system monitoring
+- Basic command parsing and execution
+
+**Frontend:**
+- React with TypeScript
+- Tailwind CSS for styling
+- Real-time system stats display
+- Command autocomplete
 
 ## API Endpoints
 
-- `POST /execute` - Execute a terminal command
-- `GET /autocomplete?prefix=<prefix>` - Get command suggestions
-- `GET /stats` - Get real-time system statistics
+- `POST /execute` - Run a command
+- `GET /autocomplete?prefix=<text>` - Get command suggestions
+- `GET /stats` - Get system stats (CPU, memory, network)
+- `GET /health` - Health check
 
-## Tech Stack
+## Notes
 
-**Backend:**
-- FastAPI (Python web framework)
-- psutil (System and process utilities)
+- This runs actual commands on your system, so be careful
+- Some commands have basic safety checks
+- The UI shows real-time system stats
+- Built for the CodeMate.ai hackathon
 
-**Frontend:**
-- React + TypeScript
-- Vite (Build tool)
-- Tailwind CSS (Styling)
+## Future Improvements
+
+- Add more command support
+- Better error handling
+- Command history
+- File upload/download
+- Multiple terminal sessions

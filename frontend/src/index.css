@@ -18,6 +18,8 @@
     --terminal-command: 45 100% 65%;
     --terminal-path: 0 0% 80%;
     --terminal-ghost: 0 0% 50%;
+    --terminal-cursor: 187 100% 60%;
+    --terminal-highlight: 217 24% 20%;
     
     /* Status Colors */
     --status-cpu: 200 100% 70%;
@@ -60,8 +62,16 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-terminal-bg text-terminal-text;
     font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+    background: hsl(var(--terminal-bg));
   }
 
   /* Custom scrollbar styles for terminal */

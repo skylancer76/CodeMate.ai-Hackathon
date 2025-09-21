@@ -21,13 +21,13 @@ export const useTerminal = () => {
     {
       id: '1',
       type: 'output',
-      content: 'Welcome to Python Terminal v1.0',
+      content: 'Welcome to Tyeetale Terminal v1.0',
       timestamp: new Date()
     },
     {
       id: '2', 
       type: 'output',
-      content: 'Connected to Python backend. Type commands to interact with your file system.',
+      content: 'Type "help" to see available commands.',
       timestamp: new Date()
     }
   ]);
@@ -93,6 +93,7 @@ export const useTerminal = () => {
         addLine('Error: Could not connect to backend server', 'error');
       }
     } catch (error) {
+      console.error('Command execution error:', error);
       addLine('Error: Backend server is not running. Please start the Python backend.', 'error');
     }
   }, [currentDirectory, addLine]);
@@ -129,10 +130,10 @@ export const useTerminal = () => {
       } catch (error) {
         // Fallback to simulated stats if backend is not available
         setStats(prev => ({
-          cpu: Math.max(5, Math.min(95, prev.cpu + (Math.random() - 0.5) * 10)),
-          memory: Math.max(20, Math.min(80, prev.memory + (Math.random() - 0.5) * 5)),
-          networkUp: Math.max(0.1, prev.networkUp + (Math.random() - 0.5) * 2),
-          networkDown: Math.max(0.1, prev.networkDown + (Math.random() - 0.5) * 2)
+          cpu: Math.max(5, Math.min(95, prev.cpu + (Math.random() - 0.5) * 8)),
+          memory: Math.max(20, Math.min(80, prev.memory + (Math.random() - 0.5) * 3)),
+          networkUp: Math.max(0.1, prev.networkUp + (Math.random() - 0.5) * 1.5),
+          networkDown: Math.max(0.1, prev.networkDown + (Math.random() - 0.5) * 1.5)
         }));
       }
     };

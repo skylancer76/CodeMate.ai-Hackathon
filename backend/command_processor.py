@@ -4,79 +4,131 @@ import subprocess
 import shlex
 import psutil
 from pathlib import Path
-from commands_list import COMMANDS
+from commands_list import COMMANDS, COMMAND_HELP
 
 class CommandProcessor:
     def __init__(self):
         self.current_dir = Path.cwd()
+        print(f"Command processor initialized in: {self.current_dir}")
 
-    # ---------- Main Entry ----------
     def execute(self, cmd: str) -> str:
-        parts = shlex.split(cmd)
+        if not cmd or not cmd.strip():
+            return ""
+        
+        parts = shlex.split(cmd.strip())
         if not parts:
             return ""
-        command, *args = parts
+            
+        command = parts[0].lower()
+        args = parts[1:] if len(parts) > 1 else []
 
+        # Check if command is supported
         if command not in COMMANDS:
-            return f"Error: '{command}' is not a supported command."
+            return f"Command not found: {command}. Type 'help' for available commands."
 
-        # map command to handler
-        func = getattr(self, f"cmd_{command}", None)
-        if func:
+        # Try to find the command handler
+        handler_method = getattr(self, f"cmd_{command}", None)
+        if handler_method:
             try:
-                return func(args)
+                result = handler_method(args)
+                return result if result is not None else ""
             except Exception as e:
-                return f"Error: {e}"
+                print(f"Error in {command}: {e}")  # Debug logging
+                return f"Error running {command}: {str(e)}"
         else:
-            return f"Error: '{command}' handler not implemented."
+            return f"Handler for '{command}' not implemented yet."
 
     # ---------- Command Handlers ----------
 
     def cmd_ls(self, args):
-        items = os.listdir(self.current_dir)
-        return "\n".join(items) if items else "(empty)"
+        try:
+            items = os.listdir(self.current_dir)
+            if not items:
+                return "(empty directory)"
+            return "\n".join(sorted(items))
+        except PermissionError:
+            return "Permission denied"
+        except Exception as e:
+            return f"Error listing directory: {e}"
 
     def cmd_cd(self, args):
         if not args:
-            return "Usage: cd <directory>"
-        new_path = (self.current_dir / args[0]).resolve()
-        if new_path.is_dir():
+            # Go to home directory if no args
+            self.current_dir = Path.home()
+            return f"Changed to home directory: {self.current_dir}"
+        
+        target = args[0]
+        if target == "..":
+            # Go up one level
+            self.current_dir = self.current_dir.parent
+            return f"Changed to parent directory: {self.current_dir}"
+        
+        new_path = (self.current_dir / target).resolve()
+        if new_path.exists() and new_path.is_dir():
             self.current_dir = new_path
-            return f"Changed directory to {self.current_dir}"
-        return f"No such directory: {args[0]}"
+            return f"Changed to: {self.current_dir}"
+        else:
+            return f"Directory not found: {target}"
 
     def cmd_pwd(self, args):
         return str(self.current_dir)
 
     def cmd_mkdir(self, args):
         if not args:
-            return "Usage: mkdir <dirname>"
-        Path(self.current_dir / args[0]).mkdir(parents=True, exist_ok=False)
-        return f"Directory '{args[0]}' created."
+            return "mkdir: missing operand"
+        
+        dirname = args[0]
+        try:
+            new_dir = self.current_dir / dirname
+            new_dir.mkdir(parents=True, exist_ok=False)
+            return f"Created directory: {dirname}"
+        except FileExistsError:
+            return f"Directory already exists: {dirname}"
+        except PermissionError:
+            return f"Permission denied: cannot create directory {dirname}"
 
     def cmd_rm(self, args):
         if not args:
-            return "Usage: rm <file>"
-        target = self.current_dir / args[0]
-        if target.is_file():
-            target.unlink()
-            return f"File '{args[0]}' removed."
-        return f"No such file: {args[0]}"
+            return "rm: missing operand"
+        
+        filename = args[0]
+        target = self.current_dir / filename
+        try:
+            if target.is_file():
+                target.unlink()
+                return f"Removed file: {filename}"
+            elif target.is_dir():
+                return f"rm: {filename} is a directory (use rmdir or rm -r)"
+            else:
+                return f"rm: cannot remove '{filename}': No such file or directory"
+        except PermissionError:
+            return f"rm: cannot remove '{filename}': Permission denied"
 
     def cmd_rmdir(self, args):
         if not args:
-            return "Usage: rmdir <dir>"
-        target = self.current_dir / args[0]
-        if target.is_dir():
-            os.rmdir(target)
-            return f"Directory '{args[0]}' removed."
-        return f"No such directory: {args[0]}"
+            return "rmdir: missing operand"
+        
+        dirname = args[0]
+        target = self.current_dir / dirname
+        try:
+            if target.is_dir():
+                os.rmdir(target)  # Only removes empty directories
+                return f"Removed directory: {dirname}"
+            else:
+                return f"rmdir: failed to remove '{dirname}': Not a directory"
+        except OSError as e:
+            return f"rmdir: failed to remove '{dirname}': {e}"
 
     def cmd_touch(self, args):
         if not args:
-            return "Usage: touch <file>"
-        (self.current_dir / args[0]).touch(exist_ok=True)
-        return f"File '{args[0]}' created."
+            return "touch: missing operand"
+        
+        filename = args[0]
+        try:
+            (self.current_dir / filename).touch(exist_ok=True)
+            return f"Created/updated file: {filename}"
+        except PermissionError:
+            return f"touch: cannot touch '{filename}': Permission denied"
 
     def cmd_cat(self, args):
         if not args:
@@ -151,7 +203,20 @@ class CommandProcessor:
 
     def cmd_kill(self, args):
         if not args:
-            return "Usage: kill <pid>"
-        pid = int(args[0])
-        psutil.Process(pid).terminate()
-        return f"Process {pid} terminated."
+            return "kill: missing operand"
+        try:
+            pid = int(args[0])
+            process = psutil.Process(pid)
+            process.terminate()
+            return f"Terminated process {pid}"
+        except (ValueError, psutil.NoSuchProcess):
+            return f"kill: process {args[0]} not found"
+        except psutil.AccessDenied:
+            return f"kill: permission denied for process {args[0]}"
+
+    def cmd_help(self, args):
+        help_text = "Available commands:\n"
+        for cmd, desc in COMMAND_HELP.items():
+            help_text += f"  {cmd:<10} - {desc}\n"
+        help_text += "\nTip: Use 'cd ..' to go up one directory level"
+        return help_text
