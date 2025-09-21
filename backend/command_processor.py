@@ -438,11 +438,27 @@ class CommandProcessor:
     # ---------- Help and Documentation ----------
 
     def cmd_help(self, args):
-        help_text = "Available commands:\n"
-        for cmd, desc in COMMAND_HELP.items():
-            help_text += f"  {cmd:<10} - {desc}\n"
-        help_text += f"\nCurrent directory: {self.current_dir.relative_to(self.terminal_root)}"
-        help_text += "\nTip: Use 'cd ..' to go up one directory level"
+        help_text = "Available commands:\n\n"
+        
+        # Group commands by category
+        categories = {
+            "File & Directory Operations": ["ls", "cd", "pwd", "mkdir", "rm", "rmdir", "touch", "cat", "echo", "mv", "cp", "ln", "chmod", "chown", "file", "stat"],
+            "Text Processing": ["head", "tail", "grep", "sed", "awk", "sort", "uniq", "wc", "cut"],
+            "System Information": ["whoami", "date", "uptime", "uname", "df", "du", "free", "top", "ps", "kill", "killall", "jobs", "bg", "fg"],
+            "Network & Utilities": ["ping", "curl", "wget", "ssh", "scp", "tar", "zip", "unzip"],
+            "Terminal Control": ["clear", "history", "alias", "export", "env", "which", "whereis"],
+            "Help & Documentation": ["help", "man", "info"]
+        }
+        
+        for category, commands in categories.items():
+            help_text += f"{category}:\n"
+            for cmd in commands:
+                if cmd in COMMAND_HELP:
+                    help_text += f"  {cmd:<10} - {COMMAND_HELP[cmd]}\n"
+            help_text += "\n"
+        
+        help_text += f"Current directory: {self.current_dir.relative_to(self.terminal_root)}\n"
+        help_text += "Tip: Use 'cd ..' to go up one directory level"
         return help_text
 
     def cmd_man(self, args):
