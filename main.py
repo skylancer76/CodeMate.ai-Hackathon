@@ -10,11 +10,17 @@ from commands_list import COMMANDS
 app = FastAPI(title="Terminal API", version="1.0.0")
 
 # CORS middleware - had to add this for frontend to work
+import os
+
 allowed_origins = [
     "http://localhost:8080",  # Local development
     "http://localhost:3000",  # Alternative local port
-    "https://your-frontend-url.vercel.app",  # Replace with your actual frontend URL
 ]
+
+# Add production frontend URL from environment variable
+frontend_url = os.environ.get("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
 
 app.add_middleware(
     CORSMiddleware,
