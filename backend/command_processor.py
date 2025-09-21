@@ -3,12 +3,17 @@ import shutil
 import subprocess
 import shlex
 import psutil
+import time
+import platform
+import socket
 from pathlib import Path
 from commands_list import COMMANDS, COMMAND_HELP
 
 class CommandProcessor:
     def __init__(self):
-        self.current_dir = Path.cwd()
+        # Set terminal root directory
+        self.terminal_root = Path("/app/terminal_root") if os.path.exists("/app") else Path.cwd().parent / "terminal_root"
+        self.current_dir = self.terminal_root
         print(f"Command processor initialized in: {self.current_dir}")
 
     def execute(self, cmd: str) -> str:
@@ -38,14 +43,26 @@ class CommandProcessor:
         else:
             return f"Handler for '{command}' not implemented yet."
 
-    # ---------- Command Handlers ----------
+    # ---------- File and Directory Operations ----------
 
     def cmd_ls(self, args):
         try:
             items = os.listdir(self.current_dir)
             if not items:
                 return "(empty directory)"
-            return "\n".join(sorted(items))
+            
+            # Add file type indicators
+            formatted_items = []
+            for item in sorted(items):
+                item_path = self.current_dir / item
+                if item_path.is_dir():
+                    formatted_items.append(f"{item}/")
+                elif item_path.is_file():
+                    formatted_items.append(item)
+                else:
+                    formatted_items.append(item)
+            
+            return "\n".join(formatted_items)
         except PermissionError:
             return "Permission denied"
         except Exception as e:
@@ -54,24 +71,29 @@ class CommandProcessor:
     def cmd_cd(self, args):
         if not args:
             # Go to home directory if no args
-            self.current_dir = Path.home()
+            self.current_dir = self.terminal_root / "home"
             return f"Changed to home directory: {self.current_dir}"
         
         target = args[0]
         if target == "..":
-            # Go up one level
-            self.current_dir = self.current_dir.parent
+            # Go up one level, but don't go above terminal root
+            if self.current_dir != self.terminal_root:
+                self.current_dir = self.current_dir.parent
             return f"Changed to parent directory: {self.current_dir}"
+        elif target == "~":
+            self.current_dir = self.terminal_root / "home"
+            return f"Changed to home directory: {self.current_dir}"
         
         new_path = (self.current_dir / target).resolve()
-        if new_path.exists() and new_path.is_dir():
+        # Ensure we don't go outside terminal root
+        if str(new_path).startswith(str(self.terminal_root)) and new_path.exists() and new_path.is_dir():
             self.current_dir = new_path
-            return f"Changed to: {self.current_dir}"
+            return f"Changed to: {self.current_dir.relative_to(self.terminal_root)}"
         else:
             return f"Directory not found: {target}"
 
     def cmd_pwd(self, args):
-        return str(self.current_dir)
+        return str(self.current_dir.relative_to(self.terminal_root))
 
     def cmd_mkdir(self, args):
         if not args:
@@ -142,7 +164,6 @@ class CommandProcessor:
         return " ".join(args)
 
     def cmd_clear(self, args):
-        # Front-end instruction to clear; no server action
         return "<CLEAR_SCREEN>"
 
     def cmd_mv(self, args):
@@ -158,65 +179,282 @@ class CommandProcessor:
             return "Usage: cp <src> <dest>"
         src = self.current_dir / args[0]
         dst = self.current_dir / args[1]
-        shutil.copy(src, dst)
+        if src.is_dir():
+            shutil.copytree(src, dst)
+        else:
+            shutil.copy(src, dst)
         return f"Copied '{args[0]}' to '{args[1]}'"
+
+    def cmd_ln(self, args):
+        if len(args) < 2:
+            return "Usage: ln <target> <link_name>"
+        target = self.current_dir / args[0]
+        link_name = self.current_dir / args[1]
+        try:
+            link_name.symlink_to(target)
+            return f"Created symbolic link: {args[1]} -> {args[0]}"
+        except Exception as e:
+            return f"Error creating link: {e}"
+
+    def cmd_chmod(self, args):
+        if len(args) < 2:
+            return "Usage: chmod <mode> <file>"
+        mode, filename = args[0], args[1]
+        file_path = self.current_dir / filename
+        try:
+            os.chmod(file_path, int(mode, 8))
+            return f"Changed permissions of {filename} to {mode}"
+        except Exception as e:
+            return f"Error changing permissions: {e}"
+
+    def cmd_file(self, args):
+        if not args:
+            return "Usage: file <filename>"
+        file_path = self.current_dir / args[0]
+        if file_path.exists():
+            if file_path.is_dir():
+                return f"{args[0]}: directory"
+            elif file_path.is_file():
+                return f"{args[0]}: regular file"
+            else:
+                return f"{args[0]}: special file"
+        return f"{args[0]}: cannot open"
+
+    def cmd_stat(self, args):
+        if not args:
+            return "Usage: stat <file>"
+        file_path = self.current_dir / args[0]
+        if file_path.exists():
+            stat_info = file_path.stat()
+            return f"File: {args[0]}\nSize: {stat_info.st_size} bytes\nModified: {time.ctime(stat_info.st_mtime)}"
+        return f"stat: cannot stat '{args[0]}': No such file or directory"
+
+    # ---------- Text Processing ----------
 
     def cmd_head(self, args):
         if not args:
             return "Usage: head <file>"
         file = self.current_dir / args[0]
-        return "\n".join(file.read_text().splitlines()[:10])
+        if file.is_file():
+            lines = file.read_text().splitlines()
+            return "\n".join(lines[:10])
+        return f"No such file: {args[0]}"
 
     def cmd_tail(self, args):
         if not args:
             return "Usage: tail <file>"
         file = self.current_dir / args[0]
-        lines = file.read_text().splitlines()
-        return "\n".join(lines[-10:])
+        if file.is_file():
+            lines = file.read_text().splitlines()
+            return "\n".join(lines[-10:])
+        return f"No such file: {args[0]}"
 
     def cmd_grep(self, args):
         if len(args) < 2:
             return "Usage: grep <pattern> <file>"
         pattern, filename = args[0], args[1]
         file = self.current_dir / filename
-        out = [l for l in file.read_text().splitlines() if pattern in l]
-        return "\n".join(out) if out else "(no matches)"
+        if file.is_file():
+            lines = file.read_text().splitlines()
+            matches = [f"{i+1}:{line}" for i, line in enumerate(lines) if pattern in line]
+            return "\n".join(matches) if matches else "(no matches)"
+        return f"No such file: {filename}"
 
-    def cmd_find(self, args):
-        term = args[0] if args else ""
-        matches = []
-        for root, dirs, files in os.walk(self.current_dir):
-            for name in files + dirs:
-                if term in name:
-                    matches.append(os.path.join(root, name))
-        return "\n".join(matches) if matches else "(no matches)"
+    def cmd_sort(self, args):
+        if not args:
+            return "Usage: sort <file>"
+        file = self.current_dir / args[0]
+        if file.is_file():
+            lines = file.read_text().splitlines()
+            return "\n".join(sorted(lines))
+        return f"No such file: {args[0]}"
+
+    def cmd_uniq(self, args):
+        if not args:
+            return "Usage: uniq <file>"
+        file = self.current_dir / args[0]
+        if file.is_file():
+            lines = file.read_text().splitlines()
+            unique_lines = []
+            prev_line = None
+            for line in lines:
+                if line != prev_line:
+                    unique_lines.append(line)
+                    prev_line = line
+            return "\n".join(unique_lines)
+        return f"No such file: {args[0]}"
+
+    def cmd_wc(self, args):
+        if not args:
+            return "Usage: wc <file>"
+        file = self.current_dir / args[0]
+        if file.is_file():
+            content = file.read_text()
+            lines = len(content.splitlines())
+            words = len(content.split())
+            chars = len(content)
+            return f"{lines} {words} {chars} {args[0]}"
+        return f"No such file: {args[0]}"
+
+    def cmd_cut(self, args):
+        if len(args) < 2:
+            return "Usage: cut -d<delimiter> -f<field> <file>"
+        # Simple implementation - cut by spaces
+        file = self.current_dir / args[-1]
+        if file.is_file():
+            lines = file.read_text().splitlines()
+            result = []
+            for line in lines:
+                fields = line.split()
+                if len(fields) > 0:
+                    result.append(fields[0])  # First field
+            return "\n".join(result)
+        return f"No such file: {args[-1]}"
+
+    # ---------- System Information ----------
 
     def cmd_whoami(self, args):
-        return os.getlogin()
+        return "terminal_user"
 
     def cmd_date(self, args):
-        return subprocess.check_output(["date"]).decode().strip()
+        return time.strftime("%a %b %d %H:%M:%S %Z %Y")
+
+    def cmd_uptime(self, args):
+        return f"up {int(time.time() / 3600)} hours"
+
+    def cmd_uname(self, args):
+        return f"{platform.system()} {platform.release()} {platform.machine()}"
+
+    def cmd_df(self, args):
+        return "Filesystem     1K-blocks    Used Available Use% Mounted on\n/dev/root       1000000   500000    500000  50% /"
+
+    def cmd_du(self, args):
+        if not args:
+            return "Usage: du <directory>"
+        dir_path = self.current_dir / args[0]
+        if dir_path.is_dir():
+            total_size = sum(f.stat().st_size for f in dir_path.rglob('*') if f.is_file())
+            return f"{total_size // 1024}\t{args[0]}"
+        return f"du: cannot access '{args[0]}': No such file or directory"
+
+    def cmd_free(self, args):
+        return "              total        used        free      shared  buff/cache   available\nMem:        8000000     4000000     2000000          0     2000000     4000000\nSwap:       2000000           0     2000000"
+
+    def cmd_top(self, args):
+        return "PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n1 root      20   0   12345    1234    1234 S   0.0   0.1   0:00.01 init"
 
     def cmd_ps(self, args):
-        procs = [f"{p.pid}\t{p.name()}" for p in psutil.process_iter(['name'])]
-        return "\n".join(procs[:30])
+        return "PID TTY          TIME CMD\n1 ?        00:00:00 init\n2 ?        00:00:00 kthreadd"
 
     def cmd_kill(self, args):
         if not args:
             return "kill: missing operand"
-        try:
-            pid = int(args[0])
-            process = psutil.Process(pid)
-            process.terminate()
-            return f"Terminated process {pid}"
-        except (ValueError, psutil.NoSuchProcess):
-            return f"kill: process {args[0]} not found"
-        except psutil.AccessDenied:
-            return f"kill: permission denied for process {args[0]}"
+        return f"Process {args[0]} terminated"
+
+    def cmd_killall(self, args):
+        if not args:
+            return "killall: missing operand"
+        return f"Process {args[0]} terminated"
+
+    def cmd_jobs(self, args):
+        return "No jobs running"
+
+    def cmd_bg(self, args):
+        return "No jobs to run in background"
+
+    def cmd_fg(self, args):
+        return "No jobs to bring to foreground"
+
+    # ---------- Network and Utilities ----------
+
+    def cmd_ping(self, args):
+        if not args:
+            return "Usage: ping <host>"
+        return f"PING {args[0]} (127.0.0.1): 56 data bytes\n64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.1 ms"
+
+    def cmd_curl(self, args):
+        if not args:
+            return "Usage: curl <url>"
+        return f"curl: (6) Could not resolve host: {args[0]}"
+
+    def cmd_wget(self, args):
+        if not args:
+            return "Usage: wget <url>"
+        return f"wget: unable to resolve host address '{args[0]}'"
+
+    def cmd_ssh(self, args):
+        return "ssh: connect to host: Connection refused"
+
+    def cmd_scp(self, args):
+        return "scp: connect to host: Connection refused"
+
+    def cmd_tar(self, args):
+        if not args:
+            return "Usage: tar [options] <archive>"
+        return f"tar: {args[-1]}: Cannot open: No such file or directory"
+
+    def cmd_zip(self, args):
+        if len(args) < 2:
+            return "Usage: zip <archive> <files...>"
+        return f"zip: {args[0]}: No such file or directory"
+
+    def cmd_unzip(self, args):
+        if not args:
+            return "Usage: unzip <archive>"
+        return f"unzip: cannot find or open {args[0]}, {args[0]}.zip or {args[0]}.ZIP"
+
+    # ---------- Terminal Control ----------
+
+    def cmd_history(self, args):
+        return "No history available"
+
+    def cmd_alias(self, args):
+        if not args:
+            return "No aliases defined"
+        return f"Alias '{args[0]}' created"
+
+    def cmd_export(self, args):
+        if not args:
+            return "No environment variables to export"
+        return f"Exported {args[0]}"
+
+    def cmd_env(self, args):
+        return "PATH=/usr/bin:/bin\nHOME=/home/terminal_user\nUSER=terminal_user"
+
+    def cmd_which(self, args):
+        if not args:
+            return "Usage: which <command>"
+        if args[0] in COMMANDS:
+            return f"/usr/bin/{args[0]}"
+        return f"which: no {args[0]} in (/usr/bin:/bin)"
+
+    def cmd_whereis(self, args):
+        if not args:
+            return "Usage: whereis <command>"
+        if args[0] in COMMANDS:
+            return f"{args[0]}: /usr/bin/{args[0]}"
+        return f"{args[0]}:"
+
+    # ---------- Help and Documentation ----------
 
     def cmd_help(self, args):
         help_text = "Available commands:\n"
         for cmd, desc in COMMAND_HELP.items():
             help_text += f"  {cmd:<10} - {desc}\n"
+        help_text += f"\nCurrent directory: {self.current_dir.relative_to(self.terminal_root)}"
         help_text += "\nTip: Use 'cd ..' to go up one directory level"
         return help_text
+
+    def cmd_man(self, args):
+        if not args:
+            return "Usage: man <command>"
+        if args[0] in COMMAND_HELP:
+            return f"Manual page for {args[0]}\n\n{COMMAND_HELP[args[0]]}"
+        return f"No manual entry for {args[0]}"
+
+    def cmd_info(self, args):
+        if not args:
+            return "Usage: info <command>"
+        if args[0] in COMMAND_HELP:
+            return f"Info: {args[0]}\n\n{COMMAND_HELP[args[0]]}"
+        return f"No info entry for {args[0]}"
