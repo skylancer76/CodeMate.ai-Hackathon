@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://https://codemateai-hackathon-production.up.railway.app/:8000';
 
 interface TerminalLine {
   id: string;
@@ -25,13 +25,13 @@ export const useTerminal = () => {
       timestamp: new Date()
     },
     {
-      id: '2', 
+      id: '2',
       type: 'output',
       content: 'Type "help" to see available commands.',
       timestamp: new Date()
     }
   ]);
-  
+
   const [currentDirectory, setCurrentDirectory] = useState('~');
   const [stats, setStats] = useState<SystemStats>({
     cpu: 0,
@@ -39,7 +39,7 @@ export const useTerminal = () => {
     networkUp: 0,
     networkDown: 0
   });
-  
+
   const lineIdCounter = useRef(3);
 
   const addLine = useCallback((content: string, type: TerminalLine['type'] = 'output') => {
@@ -54,10 +54,10 @@ export const useTerminal = () => {
 
   const executeCommand = useCallback(async (input: string) => {
     if (!input.trim()) return;
-    
+
     // Add command to output
     addLine(`${currentDirectory} > ${input}`, 'command');
-    
+
     try {
       const response = await fetch(`${API_BASE}/execute`, {
         method: 'POST',
@@ -66,7 +66,7 @@ export const useTerminal = () => {
         },
         body: JSON.stringify({ command: input.trim() }),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.output === '<CLEAR_SCREEN>') {
@@ -100,7 +100,7 @@ export const useTerminal = () => {
 
   const getAutoComplete = useCallback(async (input: string): Promise<string[]> => {
     if (!input.trim()) return [];
-    
+
     try {
       const response = await fetch(`${API_BASE}/autocomplete?prefix=${encodeURIComponent(input.trim())}`);
       if (response.ok) {
