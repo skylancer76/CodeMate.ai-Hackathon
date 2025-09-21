@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://https://codemateai-hackathon-production.up.railway.app/:8000';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://codemateai-hackathon-production.up.railway.app';
 
 interface TerminalLine {
   id: string;
