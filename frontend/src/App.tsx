@@ -46,7 +46,7 @@ const App: React.FC = () => {
   
   const inputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const lineIdCounter = useRef(3);
+  const lineIdCounter = useRef(4);
 
   const addLine = (content: string, type: TerminalLine['type'] = 'output') => {
     const newLine: TerminalLine = {
