@@ -1,0 +1,10 @@
+{
+  "env": {
+    "VITE_API_URL": "https://codemateai-hackathon-production.up.railway.app"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://codemateai-hackathon-production.up.railway.app"
+    }
+  }
+}

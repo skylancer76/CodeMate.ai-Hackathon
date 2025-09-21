@@ -156,15 +156,27 @@ const App: React.FC = () => {
     // Test backend connection on mount
     const testConnection = async () => {
       try {
-        const response = await fetch(`${API_BASE}/test`);
+        console.log('Testing connection to:', `${API_BASE}/test`);
+        const response = await fetch(`${API_BASE}/test`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
         if (response.ok) {
           const data = await response.json();
           addLine(`✅ Backend connected: ${data.message}`, 'output');
         } else {
-          addLine(`❌ Backend connection failed: Status ${response.status}`, 'error');
+          addLine(`❌ Backend connection failed: Status ${response.status} - ${response.statusText}`, 'error');
         }
       } catch (error) {
+        console.error('Connection test error:', error);
         addLine(`❌ Backend connection failed: ${error.message}`, 'error');
+        addLine(`🔗 Trying to connect to: ${API_BASE}`, 'output');
       }
     };
     
