@@ -2,14 +2,14 @@
 
 A modern, web-based terminal interface built with React and FastAPI. Experience the power of command-line operations through an intuitive, responsive web application.
 
-## ✨ Why Tyeetale Terminal?
+## Why Tyeetale Terminal?
 
-### 🎯 **Core Features**
+### **Core Features**
 - **Web-Based Terminal**: Access a full terminal experience directly in your browser - no installation required
 - **Secure Sandboxed Environment**: Execute commands safely without affecting your local system
 - **Real-time System Monitoring**: Monitor CPU, memory, and network usage with live status updates
 
-### 🚀 **Available Commands**
+### **Available Commands**
 
 | Category | Commands |
 |----------|----------|
@@ -20,7 +20,7 @@ A modern, web-based terminal interface built with React and FastAPI. Experience 
 | **Terminal Control** | `clear`, `history`, `alias`, `export`, `env`, `which`, `whereis` |
 | **Help & Documentation** | `help`, `man`, `info` |
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Tyeetale Terminal/
@@ -44,7 +44,7 @@ Tyeetale Terminal/
 └── railway.toml            # Railway deployment config
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -76,7 +76,7 @@ Tyeetale Terminal/
 4. **Access the Terminal**
    Open your browser and navigate to `http://localhost:5173`
 
-### 🌐 **Live Demo**
+### **Live Demo**
 - **Frontend**: [https://tyeetale-terminal.vercel.app](https://tyeetale-terminal.vercel.app)
 - **Backend API**: [https://codemateai-hackathon-production.up.railway.app](https://codemateai-hackathon-production.up.railway.app)
 
@@ -106,7 +106,7 @@ The application is configured for deployment on Railway:
 - **Nixpacks** - Build system
 - **Docker** - Containerization
 
-## 📖 Usage
+## Usage
 
 ### Basic Commands
 ```bash
