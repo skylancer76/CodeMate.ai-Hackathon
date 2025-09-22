@@ -87,7 +87,7 @@ The application is configured for deployment on Railway:
 1. **Backend**: Automatically deployed from the `backend/` directory
 2. **Frontend**: Deploy to Vercel, Netlify, or any static hosting service
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend
 - **React 18.3.1** - Modern UI framework
@@ -145,7 +145,7 @@ man ls      # Show manual for specific command
 info grep   # Show info documentation
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 Create a `.env` file in the frontend directory:
