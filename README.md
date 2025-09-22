@@ -77,8 +77,8 @@ Tyeetale Terminal/
    Open your browser and navigate to `http://localhost:5173`
 
 ### 🌐 **Live Demo**
-- **Frontend**: [https://tyeetale-terminal.vercel.app](https://tyeetale-terminal.vercel.app)
-- **Backend API**: [https://codemateai-hackathon-production.up.railway.app](https://codemateai-hackathon-production.up.railway.app)
+- **Frontend**: https://code-mate-ai-hackathon.vercel.app/
+- **Backend API**: https://codemateai-hackathon-production.up.railway.app/
 
 ### Production Deployment
 
