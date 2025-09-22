@@ -36,8 +36,8 @@ const App: React.FC = () => {
   ]);
   
   const [currentInput, setCurrentInput] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [selectedSuggestionIdx, setSelectedSuggestionIdx] = useState<number>(-1);
+  const [isAutocompleting, setIsAutocompleting] = useState(false);
+  const [typedLength, setTypedLength] = useState(0);
   const [currentDirectory, setCurrentDirectory] = useState('~');
   const [stats, setStats] = useState<SystemStats>({
     cpu: 17,
@@ -109,68 +109,56 @@ const App: React.FC = () => {
     if (e.key === 'Enter') {
       executeCommand(currentInput);
       setCurrentInput('');
-      setSuggestions([]);
-      setSelectedSuggestionIdx(-1);
+      setIsAutocompleting(false);
+      setTypedLength(0);
       return;
     }
 
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      if (suggestions.length > 0) {
-        const chosen = selectedSuggestionIdx >= 0 ? suggestions[selectedSuggestionIdx] : suggestions[0];
-        setCurrentInput(chosen + ' ');
-        setSuggestions([]);
-        setSelectedSuggestionIdx(-1);
-      }
-      return;
-    }
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (suggestions.length > 0) {
-        setSelectedSuggestionIdx((prev) => (prev + 1) % suggestions.length);
-      }
-      return;
-    }
-
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (suggestions.length > 0) {
-        setSelectedSuggestionIdx((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+    // Accept inline completion on Tab or ArrowRight when a selection exists
+    if (e.key === 'Tab' || e.key === 'ArrowRight') {
+      const el = inputRef.current;
+      if (el && isAutocompleting && el.selectionStart !== null && el.selectionEnd !== null && el.selectionStart !== el.selectionEnd) {
+        e.preventDefault();
+        const end = currentInput.length;
+        requestAnimationFrame(() => {
+          const node = inputRef.current;
+          if (node) node.setSelectionRange(end, end);
+        });
+        setIsAutocompleting(false);
       }
       return;
     }
   };
 
-  // Autocomplete fetch
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchSuggestions = async () => {
-      const trimmed = currentInput.trim();
-      if (!trimmed) {
-        setSuggestions([]);
-        setSelectedSuggestionIdx(-1);
-        return;
-      }
-      try {
-        const url = `${API_BASE}/autocomplete?prefix=${encodeURIComponent(trimmed)}`;
-        const res = await fetch(url, { signal: controller.signal });
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions(data.suggestions || []);
-          setSelectedSuggestionIdx(-1);
-        }
-      } catch (_err) {
-        // ignore
-      }
-    };
+  // Inline autocomplete on typing (first token only)
+  const handleChange = async (value: string) => {
+    setIsAutocompleting(false);
+    setCurrentInput(value);
 
-    const t = setTimeout(fetchSuggestions, 120);
-    return () => {
-      controller.abort();
-      clearTimeout(t);
-    };
-  }, [currentInput]);
+    // Only autocomplete the first word before a space
+    const hasSpace = value.includes(' ');
+    if (!value || hasSpace) return;
+
+    const prefix = value;
+    setTypedLength(prefix.length);
+    try {
+      const res = await fetch(`${API_BASE}/autocomplete?prefix=${encodeURIComponent(prefix)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const first: string | undefined = data.suggestions && data.suggestions[0];
+      if (first && first.toLowerCase().startsWith(prefix.toLowerCase()) && first.length > prefix.length) {
+        const completed = first;
+        setCurrentInput(completed);
+        setIsAutocompleting(true);
+        requestAnimationFrame(() => {
+          const el = inputRef.current;
+          if (el) el.setSelectionRange(prefix.length, completed.length);
+        });
+      }
+    } catch (_e) {
+      // ignore network errors for autocomplete
+    }
+  };
 
   // Fetch system stats
   useEffect(() => {
@@ -274,47 +262,12 @@ const App: React.FC = () => {
             type="text"
             className="terminal-input"
             value={currentInput}
-            onChange={(e) => setCurrentInput(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Enter command..."
             autoComplete="off"
             spellCheck="false"
           />
-
-          {suggestions.length > 0 && (
-            <div style={{
-              position: 'absolute',
-              bottom: '48px',
-              left: '0',
-              background: '#ffffff',
-              border: '1px solid #000',
-              borderRadius: '6px',
-              padding: '6px 8px',
-              maxHeight: '160px',
-              overflowY: 'auto',
-              minWidth: '240px',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
-            }}>
-              {suggestions.map((s, idx) => (
-                <div
-                  key={s + idx}
-                  onMouseDown={() => {
-                    setCurrentInput(s + ' ');
-                    setSuggestions([]);
-                    setSelectedSuggestionIdx(-1);
-                  }}
-                  style={{
-                    padding: '6px 4px',
-                    cursor: 'pointer',
-                    background: idx === selectedSuggestionIdx ? '#e6f0ff' : 'transparent',
-                    color: '#000'
-                  }}
-                >
-                  {s}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
