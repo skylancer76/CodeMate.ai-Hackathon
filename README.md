@@ -165,31 +165,4 @@ VITE_API_URL=https://your-railway-backend-url.railway.app
 - **Styling**: Update CSS variables for different color schemes
 
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built for the CodeMate.ai Hackathon
-- Inspired by modern terminal interfaces
-- Thanks to the open-source community for amazing tools
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/skylancer76/CodeMate.ai-Hackathon/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/skylancer76/CodeMate.ai-Hackathon/discussions)
-- **Email**: support@tyeetale.com
-
----
-
-<div align="center">
-  <p>Made with ❤️ by the Tyeetale Team</p>
-  <p>
-    <a href="https://github.com/skylancer76/CodeMate.ai-Hackathon">⭐ Star us on GitHub</a>
-    •
-    <a href="https://tyeetale-terminal.vercel.app">🌐 Live Demo</a>
-    •
-    <a href="https://github.com/skylancer76/CodeMate.ai-Hackathon/issues">🐛 Report Bug</a>
-  </p>
-</div>
+<!-- Trimmed License, Acknowledgments, Support, and footer per request -->
