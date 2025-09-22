@@ -2,12 +2,6 @@
 
 A modern, web-based terminal interface built with React and FastAPI. Experience the power of command-line operations through an intuitive, responsive web application.
 
-![Terminal Preview](https://img.shields.io/badge/Terminal-Web%20Based-blue)
-![React](https://img.shields.io/badge/React-18.3.1-61dafb)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688)
-![Python](https://img.shields.io/badge/Python-3.9+-3776ab)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178c6)
-
 ## ✨ Why Tyeetale Terminal?
 
 ### 🎯 **Core Features**
