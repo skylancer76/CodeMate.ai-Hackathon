@@ -279,7 +279,7 @@ const App: React.FC = () => {
                   left: `${getGhostOffset()}px`
                 }}
               >
-                {currentInput}{hint.slice(currentInput.length)}
+                {hint.slice(currentInput.length)}
               </span>
             )}
           </div>
