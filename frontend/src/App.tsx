@@ -36,6 +36,8 @@ const App: React.FC = () => {
   ]);
   
   const [currentInput, setCurrentInput] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [selectedSuggestionIdx, setSelectedSuggestionIdx] = useState<number>(-1);
   const [currentDirectory, setCurrentDirectory] = useState('~');
   const [stats, setStats] = useState<SystemStats>({
     cpu: 17,
@@ -107,8 +109,68 @@ const App: React.FC = () => {
     if (e.key === 'Enter') {
       executeCommand(currentInput);
       setCurrentInput('');
+      setSuggestions([]);
+      setSelectedSuggestionIdx(-1);
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (suggestions.length > 0) {
+        const chosen = selectedSuggestionIdx >= 0 ? suggestions[selectedSuggestionIdx] : suggestions[0];
+        setCurrentInput(chosen + ' ');
+        setSuggestions([]);
+        setSelectedSuggestionIdx(-1);
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (suggestions.length > 0) {
+        setSelectedSuggestionIdx((prev) => (prev + 1) % suggestions.length);
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (suggestions.length > 0) {
+        setSelectedSuggestionIdx((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+      }
+      return;
     }
   };
+
+  // Autocomplete fetch
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchSuggestions = async () => {
+      const trimmed = currentInput.trim();
+      if (!trimmed) {
+        setSuggestions([]);
+        setSelectedSuggestionIdx(-1);
+        return;
+      }
+      try {
+        const url = `${API_BASE}/autocomplete?prefix=${encodeURIComponent(trimmed)}`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data.suggestions || []);
+          setSelectedSuggestionIdx(-1);
+        }
+      } catch (_err) {
+        // ignore
+      }
+    };
+
+    const t = setTimeout(fetchSuggestions, 120);
+    return () => {
+      controller.abort();
+      clearTimeout(t);
+    };
+  }, [currentInput]);
 
   // Fetch system stats
   useEffect(() => {
@@ -218,6 +280,41 @@ const App: React.FC = () => {
             autoComplete="off"
             spellCheck="false"
           />
+
+          {suggestions.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              bottom: '48px',
+              left: '0',
+              background: '#ffffff',
+              border: '1px solid #000',
+              borderRadius: '6px',
+              padding: '6px 8px',
+              maxHeight: '160px',
+              overflowY: 'auto',
+              minWidth: '240px',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+            }}>
+              {suggestions.map((s, idx) => (
+                <div
+                  key={s + idx}
+                  onMouseDown={() => {
+                    setCurrentInput(s + ' ');
+                    setSuggestions([]);
+                    setSelectedSuggestionIdx(-1);
+                  }}
+                  style={{
+                    padding: '6px 4px',
+                    cursor: 'pointer',
+                    background: idx === selectedSuggestionIdx ? '#e6f0ff' : 'transparent',
+                    color: '#000'
+                  }}
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

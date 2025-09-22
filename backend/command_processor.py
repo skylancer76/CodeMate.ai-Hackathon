@@ -450,9 +450,22 @@ class CommandProcessor:
             "Help & Documentation": ["help", "man", "info"]
         }
         
-        for category, commands in categories.items():
+        order = [
+            "File & Directory Operations",
+            "Text Processing",
+            "System Information",
+            "Network & Utilities",
+            "Terminal Control",
+            "Help & Documentation"
+        ]
+
+        for category in order:
+            cmds = categories.get(category, [])
+            if not cmds:
+                continue
             help_text += f"{category}:\n"
-            for cmd in commands:
+            # Sort commands alphabetically for readability
+            for cmd in sorted(cmds):
                 if cmd in COMMAND_HELP:
                     help_text += f"  {cmd:<10} - {COMMAND_HELP[cmd]}\n"
             help_text += "\n"

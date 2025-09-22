@@ -91,6 +91,7 @@ body {
 .terminal-line {
   margin-bottom: 4px;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .terminal-line.command {
