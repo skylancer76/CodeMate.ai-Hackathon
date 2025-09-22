@@ -51,6 +51,17 @@ const App: React.FC = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const lineIdCounter = useRef(4);
 
+  // Helper function to measure text width
+  const getTextWidth = (text: string, font: string) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.font = font;
+      return context.measureText(text).width;
+    }
+    return 0;
+  };
+
   const addLine = (content: string, type: TerminalLine['type'] = 'output') => {
     const newLine: TerminalLine = {
       id: (lineIdCounter.current++).toString(),
@@ -220,6 +231,14 @@ const App: React.FC = () => {
     testConnection();
   }, []);
 
+  // Calculate the offset for the ghost suggestion
+  const getGhostOffset = () => {
+    if (!inputRef.current || !currentInput) return 0;
+
+    const font = window.getComputedStyle(inputRef.current).font;
+    return getTextWidth(currentInput, font);
+  };
+
   return (
     <div className="terminal-window">
       <div className="terminal-header">
@@ -254,8 +273,13 @@ const App: React.FC = () => {
               spellCheck="false"
             />
             {hint && (
-              <span className="ghost-suggestion">
-                {hint.slice(currentInput.length)}
+              <span
+                className="ghost-suggestion"
+                style={{
+                  left: `${getGhostOffset()}px`
+                }}
+              >
+                {currentInput}{hint.slice(currentInput.length)}
               </span>
             )}
           </div>

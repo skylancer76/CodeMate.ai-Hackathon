@@ -185,6 +185,10 @@ body {
   top: 0;
   color: #999;
   pointer-events: none;
+  font-family: inherit;
+  font-size: 14px;
+  white-space: pre;
+  z-index: 1;
 }
 
 @media (max-width: 768px) {
